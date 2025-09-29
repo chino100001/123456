@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机数组生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .description {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        
+        .input-section {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        button {
+            background: linear-gradient(to right, #3498db, #2c3e50);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            width: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .result-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .array-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .array-item {
+            background: #3498db;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .array-item:nth-child(even) {
+            background: #2c3e50;
+        }
+        
+        .array-item.special {
+            background: #e74c3c;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .array-item:hover {
+            transform: scale(1.1);
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            margin-top: 10px;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .footer {
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .array-item {
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>随机数组生成器</h1>
+        <p class="description">输入一个数字n，生成一个1~n的随机数组，其中第n个数字不为n，且每个数字只出现一次</p>
+        
+        <div class="input-section">
+            <label for="numberInput">请输入数字n (n≥2):</label>
+            <input type="number" id="numberInput" min="2" max="100" placeholder="例如：10">
+            <div class="error-message" id="errorMessage">请输入大于等于2的整数</div>
+        </div>
+        
+        <button id="generateBtn">生成随机数组</button>
+        
+        <div class="result-section" id="resultSection">
+            <div class="result-title">生成的随机数组:</div>
+            <div class="array-display" id="arrayDisplay"></div>
+            <div class="result-title" style="margin-top: 15px;">验证结果:</div>
+            <div id="validationResult"></div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        © 2023 随机数组生成器 | 设计用于GitHub Pages部署
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const numberInput = document.getElementById('numberInput');
+            const generateBtn = document.getElementById('generateBtn');
+            const resultSection = document.getElementById('resultSection');
+            const arrayDisplay = document.getElementById('arrayDisplay');
+            const errorMessage = document.getElementById('errorMessage');
+            const validationResult = document.getElementById('validationResult');
+            
+            generateBtn.addEventListener('click', function() {
+                // 获取输入值
+                const n = parseInt(numberInput.value);
+                
+                // 验证输入
+                if (isNaN(n) || n < 2) {
+                    errorMessage.style.display = 'block';
+                    resultSection.style.display = 'none';
+                    return;
+                } else {
+                    errorMessage.style.display = 'none';
+                }
+                
+                // 生成随机数组
+                const randomArray = generateRandomArray(n);
+                
+                // 显示结果
+                displayArray(randomArray);
+                validateArray(randomArray, n);
+                resultSection.style.display = 'block';
+            });
+            
+            // 生成随机数组的函数 - 修复版
+            function generateRandomArray(n) {
+                // 创建1~n的数组
+                let array = [];
+                for (let i = 1; i <= n; i++) {
+                    array.push(i);
+                }
+                
+                // 使用Fisher-Yates洗牌算法
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                
+                // 确保第n个数字不为n
+                if (array[n-1] === n) {
+                    // 找到不是n的位置进行交换
+                    let swapIndex = Math.floor(Math.random() * (n-1));
+                    [array[n-1], array[swapIndex]] = [array[swapIndex], array[n-1]];
+                }
+                
+                return array;
+            }
+            
+            // 显示数组的函数
+            function displayArray(array) {
+                arrayDisplay.innerHTML = '';
+                
+                array.forEach((num, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'array-item';
+                    item.textContent = num;
+                    
+                    // 如果是第n个元素，添加特殊样式
+                    if (index === array.length - 1) {
+                        item.classList.add('special');
+                        item.title = '第n个数字不为n';
+                    }
+                    
+                    arrayDisplay.appendChild(item);
+                });
+            }
+            
+            // 验证数组的函数
+            function validateArray(array, n) {
+                let isValid = true;
+                let issues = [];
+                
+                // 检查第n个数字是否为n
+                if (array[n-1] === n) {
+                    isValid = false;
+                    issues.push(`第${n}个数字是${n}，不符合要求`);
+                }
+                
+                // 检查是否有重复数字
+                const uniqueSet = new Set(array);
+                if (uniqueSet.size !== array.length) {
+                    isValid = false;
+                    issues.push('数组中有重复数字');
+                }
+                
+                // 检查是否包含所有1~n的数字
+                for (let i = 1; i <= n; i++) {
+                    if (!array.includes(i)) {
+                        isValid = false;
+                        issues.push(`数字${i}未出现在数组中`);
+                        break;
+                    }
+                }
+                
+                // 显示验证结果
+                if (isValid) {
+                    validationResult.innerHTML = '<div style="color: #27ae60; font-weight: 500;">✓ 验证通过：数组符合所有要求</div>';
+                } else {
+                    validationResult.innerHTML = '<div style="color: #e74c3c; font-weight: 500;">✗ 验证失败：' + issues.join('，') + '</div>';
+                }
+            }
+            
+            // 输入框回车事件
+            numberInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    generateBtn.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
